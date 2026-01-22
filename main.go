@@ -9,9 +9,9 @@ import (
 )
 
 type Category struct {
-	ID    		int     `json:"id"`
-	Name  		string  `json:"name"`
-	Description string  `json:"description"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 var kategori = []Category{
@@ -23,7 +23,7 @@ var kategori = []Category{
 func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 	// Parse ID dari URL path
 	// URL: /api/kategori/123 -> ID = 123
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/categories/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Produk ID", http.StatusBadRequest)
@@ -44,7 +44,7 @@ func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 
 func updateCategories(w http.ResponseWriter, r *http.Request) {
 	// get id dari request
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/categories/")
 
 	// ganti int
 	id, err := strconv.Atoi(idStr)
@@ -78,21 +78,21 @@ func updateCategories(w http.ResponseWriter, r *http.Request) {
 
 func deleteCategories(w http.ResponseWriter, r *http.Request) {
 	// get id
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
-	
+	idStr := strings.TrimPrefix(r.URL.Path, "/categories/")
+
 	// ganti id int
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Kategori ID", http.StatusBadRequest)
 		return
 	}
-	
+
 	// loop produk cari ID, dapet index yang mau dihapus
 	for i, p := range kategori {
 		if p.ID == id {
 			// bikin slice baru dengan data sebelum dan sesudah index
 			kategori = append(kategori[:i], kategori[i+1:]...)
-			
+
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]string{
 				"message": "sukses delete",
@@ -105,7 +105,7 @@ func deleteCategories(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/categories/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			getCategoryByID(w, r)
 		} else if r.Method == "PUT" {
@@ -114,8 +114,8 @@ func main() {
 			deleteCategories(w, r)
 		}
 	})
-	 
-	http.HandleFunc("/api/categories", func(w http.ResponseWriter, r *http.Request) {
+
+	http.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(kategori)
