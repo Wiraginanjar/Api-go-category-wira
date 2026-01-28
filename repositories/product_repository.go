@@ -38,7 +38,16 @@ func (repo *ProductRepository) GetAll() ([]models.Product, error) {
 func (repo *ProductRepository) Create(product *models.Product) error {
 	query := "INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING id"
 	err := repo.db.QueryRow(query, product.Name, product.Price, product.Stock, product.Category_id).Scan(&product.ID)
-	return err
+	if err != nil {
+		return err
+	}
+	queryGetCategory := "SELECT name FROM categories WHERE id = $1"
+	err = repo.db.QueryRow(queryGetCategory, product.Category_id).Scan(&product.Category_name)
+
+	if err != nil {
+		product.Category_name = ""
+	}
+	return nil
 }
 
 // GetByID - ambil produk by ID
@@ -73,6 +82,12 @@ func (repo *ProductRepository) Update(product *models.Product) error {
 		return errors.New("produk tidak ditemukan")
 	}
 
+	queryGetCategory := "SELECT name FROM categories WHERE id = $1"
+	err = repo.db.QueryRow(queryGetCategory, product.Category_id).Scan(&product.Category_name)
+
+	if err != nil {
+		product.Category_name = ""
+	}
 	return nil
 }
 
