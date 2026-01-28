@@ -25,7 +25,7 @@ func (repo *ProductRepository) GetAll() ([]models.Product, error) {
 	products := make([]models.Product, 0)
 	for rows.Next() {
 		var p models.Product
-		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category_id, &p.Category_name)
+		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category_name)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +46,7 @@ func (repo *ProductRepository) GetByID(id int) (*models.Product, error) {
 	query := "SELECT p.id, p.name, p.price, p.stock, p.category_id, c.name FROM product p JOIN category c ON p.category_id = c.id WHERE id = $1"
 
 	var p models.Product
-	err := repo.db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category_id, &p.Category_name)
+	err := repo.db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category_name)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("produk tidak ditemukan")
 	}
