@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"log"
 	"strings"
-	"github.com/spf13/viper"
 	"tugas-go/database"
-	"tugas-go/handler"
+	handlers "tugas-go/handler"
 	"tugas-go/repositories"
 	"tugas-go/services"
+
+	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -53,6 +54,18 @@ func main() {
 	http.HandleFunc("/api/produk", productHandler.HandleProducts)
 	http.HandleFunc("/api/produk/", productHandler.HandleProductByID)
 
+	transactionRepo := repositories.NewTransactionRepository(db)
+	transactionService := services.NewTransactionService(transactionRepo)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
+
+	reportRepo := repositories.NewReportRepository(db)
+	reportHandler := handlers.NewReportHandler(reportRepo)
+
+	http.HandleFunc("/api/report/hari-ini", reportHandler.GetDailyReport)
+	http.HandleFunc("/api/report", reportHandler.GetReportByDate)
+
 	addr := "0.0.0.0:" + config.Port
 	fmt.Println("Server running di", addr)
 
@@ -61,5 +74,3 @@ func main() {
 		fmt.Println("gagal running server", err)
 	}
 }
-
-
