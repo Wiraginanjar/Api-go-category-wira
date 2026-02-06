@@ -7,10 +7,9 @@ import (
 	"os"
 	"strings"
 	"tugas-go/database"
-	handlers "tugas-go/handler"
+	"tugas-go/handler"
 	"tugas-go/repositories"
 	"tugas-go/services"
-
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +19,7 @@ type Config struct {
 }
 
 func main() {
+	
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 

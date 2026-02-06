@@ -58,7 +58,7 @@ func (repo *ProductRepository) Create(product *models.Product) error {
 
 // GetByID - ambil produk by ID
 func (repo *ProductRepository) GetByID(id int) (*models.Productsy, error) {
-	query := "SELECT p.id, p.name, p.price, p.stock, c.name FROM product p JOIN category c ON p.category_id = c.id WHERE id = $1"
+	query := "SELECT p.id, p.name, p.price, p.stock, c.name FROM product p JOIN category c ON p.category_id = c.id WHERE p.id = $1"
 
 	var p models.Productsy
 	err := repo.db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category_name)
