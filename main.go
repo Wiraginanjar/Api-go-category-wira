@@ -8,6 +8,7 @@ import (
 	"strings"
 	"tugas-go/database"
 	"tugas-go/handler"
+	"tugas-go/middleware"
 	"tugas-go/repositories"
 	"tugas-go/services"
 	"github.com/spf13/viper"
@@ -16,8 +17,8 @@ import (
 type Config struct {
 	Port   string `mapstructure:"PORT"`
 	DBConn string `mapstructure:"DB_CONN"`
+	API_KEY string `mapstructure:"API_KEY"`
 }
-
 func main() {
 	
 	viper.AutomaticEnv()
@@ -31,6 +32,7 @@ func main() {
 	config := Config{
 		Port:   viper.GetString("PORT"),
 		DBConn: viper.GetString("DB_CONN"),
+		API_KEY: viper.GetString("API_KEY"),
 	}
 
 	// Setup database
@@ -40,31 +42,29 @@ func main() {
 	}
 	defer db.Close()
 
+	apiKeyMiddleware := middleware.APIKey(config.API_KEY)
+
 	categoryRepo := repositories.NewCategoryRepository(db)
 	categoryService := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
-
-	http.HandleFunc("/api/kategori", categoryHandler.HandleCategory)
-	http.HandleFunc("/api/kategori/", categoryHandler.HandleCategoryByID)
-
 	productRepo := repositories.NewProductRepository(db)
 	productService := services.NewProductService(productRepo)
 	productHandler := handlers.NewProductHandler(productService)
-
-	http.HandleFunc("/api/produk", productHandler.HandleProducts)
-	http.HandleFunc("/api/produk/", productHandler.HandleProductByID)
-
 	transactionRepo := repositories.NewTransactionRepository(db)
 	transactionService := services.NewTransactionService(transactionRepo)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
-
-	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
-
 	reportRepo := repositories.NewReportRepository(db)
 	reportHandler := handlers.NewReportHandler(reportRepo)
 
-	http.HandleFunc("/api/report/hari-ini", reportHandler.GetDailyReport)
-	http.HandleFunc("/api/report", reportHandler.GetReportByDate)
+	http.HandleFunc("/api/kategori", middleware.CORS(middleware.Logger(categoryHandler.HandleCategory)))
+	http.HandleFunc("/api/kategori/", middleware.CORS(middleware.Logger(apiKeyMiddleware(categoryHandler.HandleCategoryByID))))
+	http.HandleFunc("/api/produk", middleware.CORS(middleware.Logger(productHandler.HandleProducts)))
+	http.HandleFunc("/api/produk/", middleware.CORS(middleware.Logger(apiKeyMiddleware(productHandler.HandleProductByID))))
+	http.HandleFunc("/api/checkout", middleware.CORS(middleware.Logger(apiKeyMiddleware(transactionHandler.HandleCheckout)))) // POST
+	http.HandleFunc("/api/report/hari-ini", middleware.CORS(middleware.Logger(reportHandler.GetDailyReport)))
+	http.HandleFunc("/api/report", middleware.CORS(middleware.Logger(reportHandler.GetReportByDate)))
+	http.HandleFunc("/api/health", middleware.CORS(middleware.Logger(categoryHandler.HealthCheck)))
+
 
 	addr := "0.0.0.0:" + config.Port
 	fmt.Println("Server running di", addr)
